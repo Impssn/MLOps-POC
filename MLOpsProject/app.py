@@ -1,28 +1,33 @@
+# app.py
+import joblib
 from flask import Flask, request, jsonify
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-import numpy as np
+from kafka import KafkaConsumer
+import json
 
 app = Flask(__name__)
 
-# Load the Iris dataset
-iris = load_iris()
-X = iris.data
-y = iris.target
+# Load the pre-trained model
+model = joblib.load('model.joblib')
 
-# Split the dataset
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Kafka consumer setup
+consumer = KafkaConsumer(
+    'your_kafka_topic',
+    bootstrap_servers=['kafka:9092'],
+    auto_offset_reset='earliest',
+    enable_auto_commit=True,
+    group_id='my-group',
+    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+)
 
-# Train a simple RandomForest model
-model = RandomForestClassifier(n_estimators=100)
-model.fit(X_train, y_train)
+@app.route('/')
+def home():
+    return "Hello, this is the home page!"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json(force=True)
-    prediction = model.predict(np.array(data['input']).reshape(1, -1))
+    data = request.json
+    prediction = model.predict([data['features']])
     return jsonify({'prediction': int(prediction[0])})
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
