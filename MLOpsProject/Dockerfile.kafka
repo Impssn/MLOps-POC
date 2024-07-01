@@ -1,4 +1,5 @@
-# Dockerfile.kafka
-FROM wurstmeister/kafka:2.13-2.8.0
+# Dockerfile for Kafka
 
-# Any additional configuration you might need
+FROM wurstmeister/kafka:latest
+
+# The Dockerfile can be left as it is if you are using a pre-built image
