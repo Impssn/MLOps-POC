@@ -1,25 +1,14 @@
 # Dockerfile.mlmodel
-FROM python:3.8-slim
+FROM python:3.9-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy only the necessary files to reduce image size
-COPY requirements.txt .
-
-# Install only the required packages
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the remaining files
-COPY . .
+COPY app.py app.py
+COPY model.joblib model.joblib
 
-# Run the app.py when the container launches
+EXPOSE 5000
+
 CMD ["python", "app.py"]
